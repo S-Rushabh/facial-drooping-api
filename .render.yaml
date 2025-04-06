@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: facial-drooping-api
+    env: docker
+    plan: free
+    branch: main
+    region: oregon
+    dockerContext: .
+    dockerfilePath: Dockerfile
+    autoDeploy: true
