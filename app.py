@@ -17,10 +17,18 @@ MODEL_PATH = "landmark_detection.dat"
 def download_model():
     if not os.path.exists(MODEL_PATH):
         print("Downloading model...")
-        response = requests.get(MODEL_URL)
-        with open(MODEL_PATH, 'wb') as f:
-            f.write(response.content)
-        print("Model downloaded.")
+        response = requests.get(MODEL_URL, allow_redirects=True)
+        if response.status_code == 200:
+            with open(MODEL_PATH, 'wb') as f:
+                f.write(response.content)
+            print("Model downloaded.")
+        else:
+            print("Failed to download model. Status code:", response.status_code)
+            exit(1)
+
+    if os.path.getsize(MODEL_PATH) < 1000_000:  # Less than 1MB likely means HTML/redirect file
+        print("Downloaded file seems invalid. Please check your MODEL_URL.")
+        exit(1)
 
 # Load detector and predictor
 download_model()
