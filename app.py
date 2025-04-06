@@ -10,7 +10,7 @@ CORS(app)  # Enable CORS for cross-origin requests
 
 # Load face detector and landmark predictor
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("landmark_detection.dat")
+predictor = dlib.shape_predictor("https://raw.githubusercontent.com/GuoQuanhao/68_points/refs/heads/master/shape_predictor_68_face_landmarks.dat")
 
 def get_landmarks(image, face):
     landmarks = predictor(image, face)
