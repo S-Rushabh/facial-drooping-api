@@ -9,11 +9,10 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# URL to download the predictor model
-MODEL_URL = "https://huggingface.co/RushabhShah/facial_landmark_detection_model/resolve/main/landmark_detection.dat"
+MODEL_URL = "https://huggingface.co/RushabhShah/Facial_Landmark_Detection_Model/resolve/main/landmark_detection.dat"
 MODEL_PATH = "landmark_detection.dat"
 
-# Download model if not present
+# Download model if not exists
 def download_model():
     if not os.path.exists(MODEL_PATH):
         print("Downloading model...")
@@ -26,12 +25,14 @@ def download_model():
             print("Failed to download model. Status code:", response.status_code)
             exit(1)
 
-    if os.path.getsize(MODEL_PATH) < 1000_000:  # Less than 1MB likely means HTML/redirect file
-        print("Downloaded file seems invalid. Please check your MODEL_URL.")
+    # Ensure it’s not a broken download
+    if os.path.getsize(MODEL_PATH) < 1_000_000:
+        print("Downloaded file is too small — possibly invalid or corrupted.")
         exit(1)
 
-# Load detector and predictor
 download_model()
+
+# Load models
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(MODEL_PATH)
 
@@ -73,7 +74,7 @@ def detect_facial_drooping():
         return jsonify({"error": "No image uploaded"}), 400
 
     file = request.files['image']
-    image_path = "uploaded_image.jpg"
+    image_path = "uploaded.jpg"
     file.save(image_path)
 
     image = cv2.imread(image_path)
@@ -85,14 +86,12 @@ def detect_facial_drooping():
 
     for face in faces:
         landmarks = get_landmarks(gray, face)
-        asymmetry_score, is_drooping = analyze_asymmetry(landmarks)
-
-        response = {
-            "asymmetry_score": round(asymmetry_score, 4),
-            "drooping_detected": bool(is_drooping),
+        score, is_drooping = analyze_asymmetry(landmarks)
+        return jsonify({
+            "asymmetry_score": round(score, 4),
+            "drooping_detected": is_drooping,
             "message": "Facial Drooping Detected" if is_drooping else "No Drooping"
-        }
-        return jsonify(response)
+        })
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 7860))
